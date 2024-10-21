@@ -5,7 +5,8 @@
 #include <stdlib.h> 
 #include <ctype.h>/* proporciona un conjunto de funciones que se utilizan para realizar operaciones con caracteres*/
 ///////////////////////DEFINICIONES///////////////////////////////
-#define LONGITUD_SUBE 16 // tamaño fijo de lops numero de la sube
+#define LONGITUD_SUBE 16 // Tamaño fijo de los numero de la sube
+#define LONGITUD_NUM_CLIENTE 12 // Tamaño fijo de los numero de cliente 
 #define MAX_NOMBRE 31 // Tamaño máximo para el nombre (como en el ejemplo de "alumno" [1])
 #define MAX_APELLIDO 21 // Tamaño máximo para el apellido
 #define MAX_ALIAS 21 // Tamaño máximo para el alias
@@ -16,6 +17,9 @@
 #define MAX_NRO_CELULAR 1199999999 // Tamaño máximo para el número de celular
 #define MIN_NRO_CELULAR_CODE_15 1511111111 // Tamaño minimo  para el número de celular
 #define MAX_NRO_CELULAR_CODE_15 1599999999 // Tamaño máximo para el número de celular
+#define MIN_NUMERO_EMPRESA_SERVICIOS  0// Rango de eleccion para la empresas  de  servicios 
+#define MAX_NUMERO_EMPRESA_SERVICIOS 4// Rango de eleccion para la empresas  de servicioas 
+
 
 //Estructura del menu
 typedef enum{
@@ -53,11 +57,14 @@ void menu_recargas(cliente_t *cliente1);
 void barraSeparadora(void);
 void cargar_sube(cliente_t *cliente1);
 void restar_saldo(cliente_t *cliente, float cantidad);
-int cargar_celular(cliente_t *cliente1);
+void cargar_celular(cliente_t *cliente1);
+void pagar_servicios(cliente_t *cliente1);
 int validar_sube(char num_sube[]);
 int validar_saldo(float monto_a_cargar, float saldo_actual);
 int validar_empresa(int *empresa);
 void validar_celular( long *numer_celular);
+int validar_empresa_servicios(int *empresa_serviscios);
+void validar_numero_cliente();
 
 /*////////////////////////////////////////////////////////////////////////*/
 /*/////////////////////CODIGO PRINCIPAL /////////////////////////////*/
@@ -138,7 +145,7 @@ int menu_pagos_servicios(cliente_t *cliente1){
                     
                     break;
             case Servicios:
-                    printf(" esta es la obcion de servicios");
+                    pagar_servicios(cliente1);
                     system("pause");
                 break;
             case Exit:
@@ -180,7 +187,7 @@ void cargar_sube(cliente_t *cliente1) {
     int es_valido = 0;
     int monto_a_cargar,saldo_valido;
     do{
-        printf("\n\tingrese el numero de su Sube: ");
+        printf("\n\t Ingrese el numero de su Sube (ingrese 16 digitos)\n: ");
         scanf("%s", num_sube);
         es_valido = validar_sube(num_sube);
         if (!es_valido) {
@@ -188,16 +195,15 @@ void cargar_sube(cliente_t *cliente1) {
         }
     }while (!es_valido);
     do{
-        printf("\n\t Ingrese el monto a cargar (ingrese 16 digitos)\n");
+        printf("\n\t Ingrese el monto a cargar \n");
         scanf("%d",&monto_a_cargar);
         saldo_valido=validar_saldo(monto_a_cargar,cliente1->saldo);
         if (!saldo_valido){
             printf("\n\tEl saldo no es valido");
         }
     } while (!saldo_valido);
-    printf("el saldo se ha cargado correctamente\n");
+    printf("El saldo se ha cargado correctamente\n");
     restar_saldo(cliente1,monto_a_cargar);
-    printf("%d",cliente1->saldo);
     system("pause");
     menu_recargas(cliente1);    
 }
@@ -208,9 +214,9 @@ void restar_saldo(cliente_t *cliente, float cantidad) {
         printf("Saldo insuficiente.\n");
     }
 }
-int cargar_celular(cliente_t *cliente1){
-    int empresa;
-    long  long numero_celular;
+void cargar_celular(cliente_t *cliente1){
+    int empresa,monto_a_cargar,saldo_valido;
+    long  numero_celular;
     printf("\n\t Ingrese su operador de servicio [1 al 3]\n");
     printf("\n\t\t Claro <1>\n");
     printf("\n\t\t Movistar <2>\n");
@@ -220,12 +226,47 @@ int cargar_celular(cliente_t *cliente1){
     printf("\n\tIngrese numero de celular Ejemplo:1176073290\n");
     scanf("%ld",&numero_celular);
     validar_celular(&numero_celular);
-    
+    do{
+    printf("\n\t Ingrese el monto a cargar \n");
+    scanf("%d",&monto_a_cargar);
+    saldo_valido=validar_saldo(monto_a_cargar,cliente1->saldo);
+    if (!saldo_valido){
+        printf("\n\tEl saldo no es valido");
+    }
+    } while (!saldo_valido);
+    printf("el saldo se ha cargado correctamente\n");
+    restar_saldo(cliente1,monto_a_cargar);
+    printf("%d",cliente1->saldo);
+    system("pause");
+    menu_recargas(cliente1);  
 
 }
-
-
-///////////////////////////////validaciones //////////////////////////////////
+void pagar_servicios(cliente_t *cliente1){
+    int monto_a_cargar,saldo_valido,empresa_serviscios;
+    printf("\n\t Ingrese el servicio domestico a pagar [1 al 4]\n");
+    printf("\n\t\t Edenor <1>\n");
+    printf("\n\t\t Edesur  <2>\n");
+    printf("\n\t\t Aysa <3>\n");
+    printf("\n\t\t Gas natural  <4>\n");
+    scanf("%d",&empresa_serviscios);
+    validar_empresa_servicios(&empresa_serviscios);
+    system("cls");
+    validar_numero_cliente();
+    do{
+        printf("\n\t Ingrese el monto a cargar \n");
+        scanf("%d",&monto_a_cargar);
+        saldo_valido=validar_saldo(monto_a_cargar,cliente1->saldo);
+        if (!saldo_valido){
+            printf("\n\tEl saldo no es valido");
+        }
+    } while (!saldo_valido);
+        printf("El importe descontado de su cuenta es: %d",monto_a_cargar,"\n");
+        system("pause");
+        menu_pagos_servicios(cliente1);    
+}
+    
+    
+//////////////////////////validaciones //////////////////////////////////
 int validar_sube(char num_sube[]) {
     if (strlen(num_sube) != LONGITUD_SUBE) {
     return 0; 
@@ -256,7 +297,7 @@ int validar_empresa(int *empresa) {
     }
     return *empresa;
 }
-void validar_celular( long *numer_celular) {
+void validar_celular( long * numer_celular) {
     do {
         if (*numer_celular < MIN_NRO_CELULAR || *numer_celular > MAX_NRO_CELULAR) {
             printf("Numero de celular invalido. Intente nuevamente.\n");
@@ -265,6 +306,39 @@ void validar_celular( long *numer_celular) {
     } while (*numer_celular < MIN_NRO_CELULAR || *numer_celular > MAX_NRO_CELULAR);
 
 }
+int validar_empresa_servicios(int *empresa_serviscios) {
+    while ((*empresa_serviscios < MIN_NUMERO_EMPRESA_SERVICIOS ) || (*empresa_serviscios > MAX_NUMERO_EMPRESA_SERVICIOS)) {
+        printf("\n\t Ingrese el servicio domestico a pagar [1 al 4]\n");
+        printf("\n\t\t Edenor <1>\n");
+        printf("\n\t\t Edesur  <2>\n");
+        printf("\n\t\t Aysa <3>\n");
+        printf("\n\t\t Gas natural  <4>\n");
+        scanf("%d", empresa_serviscios); 
+    }
+    return *empresa_serviscios;
+}
+void validar_numero_cliente(){
+    char num_cliente[LONGITUD_NUM_CLIENTE + 1];
+    int cliente_valido = 0;
+    do {
+        printf("\n\t Ingrese su numero de cliente solo dijitos (12):\n ");
+        scanf("%s", num_cliente);
+        
+        int digitos_validos = 0;
+        for (int i = 0; i < LONGITUD_NUM_CLIENTE; i++) {
+            if (isdigit(num_cliente[i])) {
+                digitos_validos++;
+            }
+        }
+
+        if (digitos_validos == LONGITUD_NUM_CLIENTE &&(strlen(num_cliente)== LONGITUD_NUM_CLIENTE)) {
+            cliente_valido = 1;
+        }else {
+            printf("\n\t El numero ingresado no es valido \n");
+        }
+    } while (!cliente_valido);
+}
+
 
 
 void barraSeparadora(void){
